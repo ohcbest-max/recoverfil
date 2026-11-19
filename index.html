@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <!-- 모바일 전체 화면(Standalone) 및 노치/홈 인디케이터 대응 뷰포트 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+  <!-- PWA 메타 태그 (삼성 인터넷, 크롬, 사파리 공통) -->
+  <meta name="theme-color" content="#2563EB" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="리커버핏" />
+  <meta name="application-name" content="리커버핏" />
+
+  <title>리커버핏 (RecoverFit) | 직장인 하체 회복·예방 매니저</title>
+
+  <!-- 1) 고해상도 인라인 SVG 파비콘 (블루-스카이 그라데이션 + 쉴드/펄스 & 종아리 회복 엠블럼) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%232563EB'/%3E%3Cstop offset='100%25' stop-color='%230EA5E9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='192' height='192' rx='44' fill='url(%23g)'/%3E%3Cpath d='M96 34 L144 54 V98 C144 130 122 152 96 162 C70 152 48 130 48 98 V54 Z' fill='none' stroke='%23FFFFFF' stroke-width='10' stroke-linejoin='round' opacity='0.95'/%3E%3Cpath d='M62 102 H80 L90 78 L104 120 L114 96 H130' fill='none' stroke='%23FFFFFF' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='96' cy='58' r='5' fill='%23BAE6FD'/%3E%3C/svg%3E" />
+
+  <!-- 2) 동기식 인라인 스크립트: Offscreen Canvas로 192x192 / 512x512 PNG 앱 아이콘 생성 및 Dynamic PWA Manifest 주입 -->
+  <script>
+    (function setupDynamicPWA() {
+      try {
+        function renderBrandIconPNG(size) {
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          const s = size / 192;
+
+          // 둥근 사각형 배경 (블루 -> 스카이 그라데이션)
+          const r = 42 * s;
+          ctx.beginPath();
+          ctx.moveTo(r, 0);
+          ctx.lineTo(size - r, 0);
+          ctx.quadraticCurveTo(size, 0, size, r);
+          ctx.lineTo(size, size - r);
+          ctx.quadraticCurveTo(size, size, size - r, size);
+          ctx.lineTo(r, size);
+          ctx.quadraticCurveTo(0, size, 0, size - r);
+          ctx.lineTo(0, r);
+          ctx.quadraticCurveTo(0, 0, r, 0);
+          ctx.closePath();
+
+          const grad = ctx.createLinearGradient(0, 0, size, size);
+          grad.addColorStop(0, '#2563EB');
+          grad.addColorStop(1, '#0EA5E9');
+          ctx.fillStyle = grad;
+          ctx.fill();
+
+          // 은은한 상단 하이라이트 광택
+          const glow = ctx.createRadialGradient(48 * s, 36 * s, 6 * s, 48 * s, 36 * s, 120 * s);
+          glow.addColorStop(0, 'rgba(255,255,255,0.22)');
+          glow.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = glow;
+          ctx.fill();
+
+          // 미니멀 화이트 쉴드 외곽선 (근육 보호)
+          ctx.beginPath();
+          ctx.moveTo(96 * s, 32 * s);
+          ctx.lineTo(144 * s, 52 * s);
+          ctx.lineTo(144 * s, 96 * s);
+          ctx.bezierCurveTo(144 * s, 128 * s, 122 * s, 150 * s, 96 * s, 161 * s);
+          ctx.bezierCurveTo(70 * s, 150 * s, 48 * s, 128 * s, 48 * s, 96 * s);
+          ctx.lineTo(48 * s, 52 * s);
+          ctx.closePath();
+          ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+          ctx.lineWidth = 10 * s;
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+
+          // 회복 펄스(맥박) + 종아리 곡선 라인
+          ctx.beginPath();
+          ctx.moveTo(62 * s, 102 * s);
+          ctx.lineTo(80 * s, 102 * s);
+          ctx.lineTo(90 * s, 77 * s);
+          ctx.lineTo(104 * s, 121 * s);
+          ctx.lineTo(114 * s, 96 * s);
+          ctx.lineTo(130 * s, 96 * s);
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 9 * s;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+
+          // 상단 포인트 도트
+          ctx.beginPath();
+          ctx.arc(96 * s, 57 * s, 5.5 * s, 0, Math.PI * 2);
+          ctx.fillStyle = '#BAE6FD';
+          ctx.fill();
+
+          return canvas.toDataURL('image/png');
+        }
+
+        const icon192 = renderBrandIconPNG(192);
+        const icon512 = renderBrandIconPNG(512);
+        window.__RECOVERFIT_ICON_192__ = icon192;
+
+        // Apple Touch Icon & PNG Icon 동적 주입
+        const appleIcon = document.createElement('link');
+        appleIcon.rel = 'apple-touch-icon';
+        appleIcon.sizes = '192x192';
+        appleIcon.href = icon192;
+        document.head.appendChild(appleIcon);
+
+        const pngIcon = document.createElement('link');
+        pngIcon.rel = 'icon';
+        pngIcon.type = 'image/png';
+        pngIcon.sizes = '192x192';
+        pngIcon.href = icon192;
+        document.head.appendChild(pngIcon);
+
+        // Web App Manifest JSON 생성 및 Blob URL 연결 (삼성 인터넷 / 크롬 Standalone 인식)
+        const manifestObj = {
+          name: '리커버핏 - 직장인 하체 회복 매니저',
+          short_name: '리커버핏',
+          description: '3040 직장인 종아리·하체 부상 회복 및 일상 부하 관리 앱',
+          start_url: window.location.href || './',
+          display: 'standalone',
+          orientation: 'portrait',
+          background_color: '#F8FAFC',
+          theme_color: '#2563EB',
+          icons: [
+            {
+              src: icon192,
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable'
+            },
+            {
+              src: icon512,
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable'
+            }
+          ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.id = 'pwa-manifest';
+        manifestLink.href = manifestUrl;
+        document.head.appendChild(manifestLink);
+      } catch (e) {
+        console.warn('PWA 동적 매니페스트 초기화 중 오류:', e);
+      }
+    })();
+  </script>
+
+  <!-- Tailwind CSS & Pretendard / Inter 폰트 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Pretendard Variable"', 'Pretendard', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 2px 14px rgba(15, 23, 42, 0.045)',
+            'nav': '0 -4px 20px rgba(15, 23, 42, 0.06)',
+            'sheet': '0 -12px 42px rgba(15, 23, 42, 0.18)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #E2E8F0;
+      font-family: "Pretendard Variable", Pretendard, Inter, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+    }
+
+    /* 데스크톱 중앙 430px 모바일 프레임 / 모바일 전체 화면 */
+    .app-shell {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100dvh;
+      margin: 0 auto;
+      background-color: #F8FAFC;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 44px rgba(15, 23, 42, 0.09);
+    }
+
+    @media (max-width: 430px) {
+      body {
+        background-color: #F8FAFC;
+      }
+      .app-shell {
+        box-shadow: none;
+      }
+    }
+
+    /* Standalone 전체 화면 안전 영역(Safe Area) 대응 */
+    .safe-top-header {
+      padding-top: calc(0.75rem + env(safe-area-inset-top));
+    }
+
+    .safe-bottom-nav {
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+
+    /* 커스텀 레인지 슬라이더 */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: #E2E8F0;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #2563EB;
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.15);
+    }
+
+    input[type="range"].slider-danger::-webkit-slider-thumb {
+      background: #E11D48;
+      box-shadow: 0 2px 6px rgba(225, 29, 72, 0.35);
+    }
+
+    /* 탭 전환 애니메이션 */
+    .tab-panel {
+      display: none;
+      animation: fadeSlideUp 0.22s ease-out;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 바텀 시트 부드러운 슬라이드 */
+    .sheet-backdrop {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.24s ease;
+    }
+    .sheet-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sheet-panel {
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .sheet-backdrop.open .sheet-panel {
+      transform: translateY(0);
+    }
+
+    /* 경고 배너 펄스 */
+    @keyframes gentlePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.012); }
+    }
+    .alert-pulse {
+      animation: gentlePulse 2s infinite;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-blue-100">
+
+  <div class="app-shell">
+
+    <!-- =========================================================
+         상단 고정 헤더 (Safe Area Top 대응 + 브랜드 + 병원 배지 + 설치 버튼)
+         ========================================================= -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 pb-3 safe-top-header">
+      <div class="flex items-center justify-between gap-2">
+        <!-- 리커버핏 브랜드 마크 + 병원 연동 배지 -->
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-sm shrink-0">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l7 3v5c0 4.5-3 7.8-7 9.5-4-1.7-7-5-7-9.5V6l7-3z" />
+              <path d="M7.5 12h2.2l1.3-2.8 2 5 1.2-2.2h2.3" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-extrabold tracking-tight text-slate-900">리커버핏</span>
+              <span id="headerStageBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 shrink-0">
+                2단계 회복 초기
+              </span>
+            </div>
+            <div class="flex items-center gap-1 mt-0.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <span class="text-[11px] font-medium text-slate-500 truncate">바른정형외과 홈케어 연동중</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 앱 설치 버튼 (Standalone 실행 중이면 숨김) -->
+        <button id="btnHeaderInstall" type="button"
+          class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-95 text-blue-700 border border-blue-100/80 text-xs font-bold transition shrink-0">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span>앱 설치</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- =========================================================
+         메인 스크롤 영역
+         ========================================================= -->
+    <main class="flex-1 px-4 pt-4 pb-28 overflow-y-auto space-y-4">
+
+      <!-- =========================================================
+           TAB 1: 홈 (Home)
+           ========================================================= -->
+      <section id="tab-home" class="tab-panel active space-y-4">
+
+        <!-- 실시간 과부하 / 좌식 경고 배너 (주의 / 위험) -->
+        <div id="overloadAlertBanner" class="hidden alert-pulse rounded-2xl p-4 border shadow-sm">
+          <div class="flex items-start gap-3">
+            <div id="overloadAlertIcon" class="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-1.5">
+                <span id="overloadLevelPill" class="px-1.5 py-0.5 rounded text-[10px] font-extrabold text-white bg-rose-600">위험</span>
+                <p id="overloadAlertTitle" class="text-sm font-bold text-rose-700">과부하 경고</p>
+              </div>
+              <p id="overloadAlertDesc" class="text-xs text-rose-700/90 mt-1 leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 오늘의 회복 단계 요약 히어로 카드 -->
+        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 text-white rounded-3xl p-5 shadow-card relative overflow-hidden">
+          <div class="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-sky-500/20 blur-2xl pointer-events-none"></div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-slate-300">종아리 근육 파열 · D+14</span>
+            <span id="heroStagePill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30">
+              2단계 회복 초기
+            </span>
+          </div>
+          <h1 id="heroHeadline" class="text-[19px] font-bold tracking-tight leading-snug">
+            허용 범위 내 일상 보행과<br />부드러운 가동성 이완에 집중하세요
+          </h1>
+
+          <div class="grid grid-cols-3 gap-2.5 mt-5 pt-4 border-t border-white/10">
+            <div class="bg-white/10 rounded-2xl p-3">
+              <p class="text-[11px] text-slate-300">권장 보행 한도</p>
+              <p id="safeStepLimitText" class="text-base font-extrabold text-sky-300 mt-0.5">4,500보</p>
+            </div>
+            <div class="bg-white/10 rounded-2xl p-3">
+              <p class="text-[11px] text-slate-300">스트레칭 강도</p>
+              <p id="allowedIntensityText" class="text-base font-extrabold text-white mt-0.5">저강도</p>
+            </div>
+            <div class="bg-white/10 rounded-2xl p-3">
+              <p class="text-[11px] text-slate-300">복귀 목표</p>
+              <p id="heroTargetSport" class="text-base font-extrabold text-white mt-0.5">러닝</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 오늘의 일과 루틴 진행률 카드 -->
+        <div class="bg-white rounded-3xl p-4 shadow-card border border-slate-100">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+              <h2 class="text-sm font-bold text-slate-900">오늘의 일과 루틴</h2>
+            </div>
+            <button id="btnGoToRoutines" type="button" class="text-xs font-bold text-blue-600 hover:text-blue-700">
+              루틴 보기 &gt;
+            </button>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div id="homeRoutineBar" class="h-full bg-gradient-to-r from-blue-600 to-sky-500 rounded-full transition-all duration-300" style="width: 20%;"></div>
+            </div>
+            <span id="homeRoutineCount" class="text-xs font-extrabold text-blue-700 shrink-0">1/5 완료</span>
+          </div>
+          <p id="homeRoutineSub" class="text-[11px] text-slate-400 mt-1.5">업무 틈틈이 1분 루틴으로 오후 부종과 재파열을 예방하세요</p>
+        </div>
+
+        <!-- 10초 데일리 회복 체크 카드 -->
+        <div class="bg-white rounded-3xl p-5 shadow-card border border-slate-100">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">10초 데일리 회복 체크</h2>
+              <p class="text-xs text-slate-500 mt-0.5">오늘의 통증과 아침 뻣뻣함으로 회복 단계를 자동 산정합니다</p>
+            </div>
+            <span id="vasScorePill" class="px-3 py-1 rounded-full text-sm font-extrabold bg-blue-50 text-blue-700 shrink-0">
+              VAS 3
+            </span>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs font-medium text-slate-500">
+              <span>0 (무통)</span>
+              <span id="vasFeelingText" class="text-blue-700 font-semibold">약간 뻐근함</span>
+              <span>10 (극심함)</span>
+            </div>
+            <input id="vasSlider" type="range" min="0" max="10" step="1" value="3" />
+            <div class="flex justify-between px-1 text-[10px] text-slate-400">
+              <span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span>
+            </div>
+          </div>
+
+          <div class="mt-5">
+            <p class="text-xs font-semibold text-slate-600 mb-2">아침 기상 시 종아리 뻣뻣함</p>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" data-stiffness="none" class="stiffness-btn py-2.5 rounded-xl text-xs font-semibold border transition-all">없음</button>
+              <button type="button" data-stiffness="mild" class="stiffness-btn py-2.5 rounded-xl text-xs font-semibold border transition-all">약간</button>
+              <button type="button" data-stiffness="severe" class="stiffness-btn py-2.5 rounded-xl text-xs font-semibold border transition-all">심함</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 실시간 과부하 경고 시뮬레이터 -->
+        <div class="bg-white rounded-3xl p-5 shadow-card border border-slate-100 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">실시간 과부하 경고 시뮬레이터</h2>
+              <p class="text-xs text-slate-500 mt-0.5">출퇴근 보행·계단 부하와 좌식 시간을 조절해 경고를 체험하세요</p>
+            </div>
+            <span id="loadPercentBadge" class="text-sm font-extrabold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg shrink-0">
+              70%
+            </span>
+          </div>
+
+          <!-- 부하 게이지 바 -->
+          <div>
+            <div class="flex justify-between text-xs mb-1.5">
+              <span class="font-medium text-slate-600">
+                환산 부하 <strong id="effectiveStepsText" class="text-slate-900">3,500</strong>보
+              </span>
+              <span class="text-slate-400">안전 한도 <span id="limitStepsSubText">4,500</span>보</span>
+            </div>
+            <div class="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="loadProgressBar" class="h-full bg-blue-600 rounded-full transition-all duration-300" style="width: 70%;"></div>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1.5">* 계단 1층 이동은 종아리 충격 기준 약 150보로 환산됩니다.</p>
+          </div>
+
+          <!-- 오늘 걸음 수 (0~12,000보) -->
+          <div class="bg-slate-50 rounded-2xl p-3.5 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-700">오늘 걸음 수</span>
+              <span id="stepsValueText" class="text-sm font-extrabold text-slate-900">3,200보</span>
+            </div>
+            <input id="stepsSlider" type="range" min="0" max="12000" step="100" value="3200" />
+          </div>
+
+          <!-- 계단 층수 (0~25층) -->
+          <div class="bg-slate-50 rounded-2xl p-3.5 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-700">계단 층수 (출퇴근·사내 이동)</span>
+              <span id="stairsValueText" class="text-sm font-extrabold text-slate-900">2층</span>
+            </div>
+            <input id="stairsSlider" type="range" min="0" max="25" step="1" value="2" />
+          </div>
+
+          <!-- 장시간 좌식(60분) 토글 -->
+          <button id="btnSedentarySim" type="button"
+            class="w-full py-3 px-4 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.99] transition flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span id="sedentaryDot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+              <div class="text-left">
+                <p class="text-xs font-bold text-slate-800">장시간 좌식(60분) 알림 테스트</p>
+                <p id="sedentarySubText" class="text-[11px] text-slate-400">연속 착석 시 종아리 부종 주의 배너 표시</p>
+              </div>
+            </div>
+            <span id="sedentaryStatusBadge" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500">OFF</span>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- =========================================================
+           TAB 2: 일과 루틴 (Routine)
+           ========================================================= -->
+      <section id="tab-routine" class="tab-panel space-y-4">
+
+        <!-- 일과 루틴 요약 카드 -->
+        <div class="bg-white rounded-3xl p-5 shadow-card border border-slate-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">직장인 일과 회복 루틴</h2>
+              <p class="text-xs text-slate-500 mt-0.5">카드를 탭하면 동작 일러스트·주의사항·60초 타이머가 열립니다</p>
+            </div>
+            <span id="routinePercentText" class="text-2xl font-extrabold text-blue-600">20%</span>
+          </div>
+          <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden mt-3">
+            <div id="routineProgressBar" class="h-full bg-gradient-to-r from-blue-600 to-sky-500 rounded-full transition-all duration-300" style="width: 20%;"></div>
+          </div>
+          <div class="flex items-center justify-between mt-2">
+            <span id="routineCountText" class="text-xs font-medium text-slate-500">1 / 5 완료</span>
+            <button id="btnResetRoutines" type="button" class="text-xs font-semibold text-slate-400 hover:text-slate-600 underline">
+              오늘 체크 초기화
+            </button>
+          </div>
+        </div>
+
+        <!-- 5개 타임라인 루틴 카드 리스트 -->
+        <div id="routineTimelineContainer" class="space-y-3"></div>
+
+      </section>
+
+      <!-- =========================================================
+           TAB 3: 복귀 테스트 (Return-to-Sport)
+           ========================================================= -->
+      <section id="tab-rts" class="tab-panel space-y-4">
+
+        <!-- 종목 선택 필 -->
+        <div class="bg-white rounded-3xl p-4 shadow-card border border-slate-100">
+          <p class="text-xs font-bold text-slate-600 mb-2.5">복귀 목표 생활체육 종목</p>
+          <div id="sportPillGroup" class="grid grid-cols-4 gap-2">
+            <button type="button" data-sport="러닝" class="sport-pill py-2 rounded-xl text-xs font-bold border transition">러닝</button>
+            <button type="button" data-sport="테니스" class="sport-pill py-2 rounded-xl text-xs font-bold border transition">테니스</button>
+            <button type="button" data-sport="축구/풋살" class="sport-pill py-2 rounded-xl text-xs font-bold border transition">축구/풋살</button>
+            <button type="button" data-sport="등산" class="sport-pill py-2 rounded-xl text-xs font-bold border transition">등산</button>
+          </div>
+        </div>
+
+        <!-- 복귀 준비도 게이지 카드 -->
+        <div class="bg-white rounded-3xl p-5 shadow-card border border-slate-100 flex flex-col items-center text-center">
+          <span class="text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full mb-3">
+            <span id="rtsSportName">러닝</span> 복귀 준비도 점검
+          </span>
+
+          <div class="relative w-40 h-40 flex items-center justify-center my-1">
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="58" stroke="#F1F5F9" stroke-width="12" fill="none" />
+              <circle id="rtsGaugeCircle" cx="70" cy="70" r="58" stroke="#2563EB" stroke-width="12" fill="none"
+                stroke-linecap="round" stroke-dasharray="364.4" stroke-dashoffset="364.4"
+                style="transition: stroke-dashoffset 0.45s ease, stroke 0.3s ease;" />
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-[11px] font-medium text-slate-400">복귀 준비도</span>
+              <span id="rtsScoreText" class="text-3xl font-extrabold text-slate-900">0%</span>
+            </div>
+          </div>
+
+          <div id="rtsVerdictBox" class="w-full mt-3 rounded-2xl p-4 bg-slate-50 border border-slate-100 text-left">
+            <p id="rtsVerdictTitle" class="text-sm font-bold text-slate-900">기초 회복 단계</p>
+            <p id="rtsVerdictDesc" class="text-xs text-slate-600 mt-1 leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- 자가 점검 미션 4종 -->
+        <div class="bg-white rounded-3xl p-5 shadow-card border border-slate-100 space-y-3">
+          <h3 class="text-base font-bold text-slate-900">단계별 복귀 자가 미션</h3>
+
+          <label class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 cursor-pointer active:scale-[0.99] transition">
+            <div class="pr-3">
+              <p class="text-sm font-bold text-slate-800">일상 평지 보행 무통 20분</p>
+              <p class="text-xs text-slate-500 mt-0.5">연속 20분 평지 걸음 시 당김·통증 없음</p>
+            </div>
+            <input id="rtsWalk20" type="checkbox" class="w-6 h-6 accent-blue-600 rounded-lg cursor-pointer shrink-0" />
+          </label>
+
+          <label class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 cursor-pointer active:scale-[0.99] transition">
+            <div class="pr-3">
+              <p class="text-sm font-bold text-slate-800">양발 뒤꿈치 들기 15회</p>
+              <p class="text-xs text-slate-500 mt-0.5">벽을 가볍게 짚고 양발로 15회 통증 없이 완료</p>
+            </div>
+            <input id="rtsDoubleHeel" type="checkbox" class="w-6 h-6 accent-blue-600 rounded-lg cursor-pointer shrink-0" />
+          </label>
+
+          <label class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 cursor-pointer active:scale-[0.99] transition">
+            <div class="pr-3">
+              <p class="text-sm font-bold text-slate-800">한 발 뒤꿈치 들기 10회</p>
+              <p class="text-xs text-slate-500 mt-0.5">다친 쪽 다리만으로 10회 안정적 수행</p>
+            </div>
+            <input id="rtsSingleHeel" type="checkbox" class="w-6 h-6 accent-blue-600 rounded-lg cursor-pointer shrink-0" />
+          </label>
+
+          <label class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 cursor-pointer active:scale-[0.99] transition">
+            <div class="pr-3">
+              <p class="text-sm font-bold text-slate-800">제자리 가벼운 바운스 (10초)</p>
+              <p class="text-xs text-slate-500 mt-0.5">낮은 리듬 점프 착지 시 날카로운 통증 없음</p>
+            </div>
+            <input id="rtsBounce" type="checkbox" class="w-6 h-6 accent-blue-600 rounded-lg cursor-pointer shrink-0" />
+          </label>
+        </div>
+
+      </section>
+
+      <!-- =========================================================
+           TAB 4: 병원/기록 (Clinic & Log)
+           ========================================================= -->
+      <section id="tab-report" class="tab-panel space-y-4">
+
+        <!-- 제휴 병원 카드 -->
+        <div class="bg-white rounded-3xl p-5 shadow-card border border-slate-100 space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md">제휴 병원 홈케어</span>
+              <h2 class="text-base font-extrabold text-slate-900 mt-1.5">바른정형외과 스포츠재활클리닉</h2>
+              <p class="text-xs text-slate-500">담당의: 김정훈 원장</p>
+            </div>
+            <div class="bg-slate-900 text-white rounded-2xl px-3.5 py-2 text-center shrink-0">
+              <p class="text-[10px] text-slate-300">다음 내원일</p>
+              <p class="text-base font-extrabold text-sky-300">D-5</p>
+            </div>
+          </div>
+
+          <div class="bg-blue-50/70 border border-blue-100 rounded-2xl p-4">
+            <p class="text-xs font-bold text-blue-900 mb-1">담당의 홈케어 코멘트</p>
+            <p class="text-xs text-blue-900/80 leading-relaxed">
+              "비복근 내측 부분 파열 회복 중입니다. 출퇴근 계단 이동을 최소화하고, 업무 중 1시간마다 책상 밑 발목 이완과 퇴근 후 15분 거상을 유지하세요. 다음 내원 시 초음파로 유합 상태를 재확인합니다."
+            </p>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5">
+            <div class="bg-slate-50 rounded-2xl p-3 text-center">
+              <p class="text-[11px] text-slate-500">7일 평균 통증</p>
+              <p id="reportAvgVas" class="text-base font-extrabold text-slate-900 mt-0.5">3.7점</p>
+            </div>
+            <div class="bg-slate-50 rounded-2xl p-3 text-center">
+              <p class="text-[11px] text-slate-500">오늘 루틴율</p>
+              <p id="reportRoutineRate" class="text-base font-extrabold text-blue-700 mt-0.5">20%</p>
+            </div>
+            <div class="bg-slate-50 rounded-2xl p-3 text-center">
+              <p class="text-[11px] text-slate-500">복귀 준비도</p>
+              <p id="reportRtsRate" class="text-base font-extrabold text-slate-900 mt-0.5">25%</p>
+            </div>
+          </div>
+
+          <button id="btnCopyReport" type="button" class="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-xs font-bold transition">
+            진료실 제출용 7일 요약 복사하기
+          </button>
+        </div>
+
+        <!-- 7일 통증(VAS) 및 루틴 달성 추이 SVG 차트 -->
+        <div class="bg-white rounded-3xl p-5 shadow-card border border-slate-100 space-y-5">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">최근 7일 통증 & 루틴 추이</h3>
+            <p class="text-xs text-slate-500 mt-0.5">오늘 입력한 통증과 루틴 달성률이 실시간 반영됩니다</p>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between text-xs mb-2">
+              <span class="font-bold text-slate-700">통증 지수 (VAS 0~10)</span>
+              <span class="text-rose-500 font-semibold">낮을수록 회복 양호</span>
+            </div>
+            <div id="vasChartContainer" class="w-full h-36 bg-slate-50 rounded-2xl p-3"></div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between text-xs mb-2">
+              <span class="font-bold text-slate-700">일별 루틴 달성률 (%)</span>
+              <span class="text-blue-600 font-semibold">목표 80% 이상</span>
+            </div>
+            <div id="routineChartContainer" class="w-full h-36 bg-slate-50 rounded-2xl p-3"></div>
+          </div>
+        </div>
+
+        <!-- 앱 설치 상태 및 홈 화면 추가 가이드 카드 -->
+        <div class="bg-white rounded-3xl p-5 shadow-card border border-slate-100 space-y-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+              <img id="clinicCardAppIcon" alt="리커버핏 앱 아이콘" class="w-11 h-11 rounded-2xl shadow-sm border border-slate-100 shrink-0" />
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">앱 설치 상태 및 홈 화면 추가</h3>
+                <p id="standaloneStatusText" class="text-xs text-slate-500 mt-0.5">현재 웹 브라우저 모드에서 실행 중</p>
+              </div>
+            </div>
+            <span id="standaloneStatusBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 shrink-0">
+              브라우저
+            </span>
+          </div>
+
+          <button id="btnOpenInstallFromClinic" type="button"
+            class="w-full py-2.5 rounded-2xl bg-blue-50 hover:bg-blue-100 active:scale-[0.99] text-blue-700 text-xs font-extrabold transition">
+            삼성 인터넷 · 크롬 · 사파리 앱 설치 가이드 보기
+          </button>
+        </div>
+
+        <!-- 데이터 초기화 카드 -->
+        <div class="bg-white rounded-3xl p-4 shadow-card border border-slate-100 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-800">저장된 기록 초기화</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">통증·루틴·복귀 테스트 기록을 초기 상태로 되돌립니다</p>
+          </div>
+          <button id="btnOpenResetModal" type="button" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold transition shrink-0">
+            데이터 초기화
+          </button>
+        </div>
+
+        <p class="text-center text-[11px] text-slate-400 px-3 leading-relaxed">
+          본 앱은 비의료 일상 회복 참고용 웰니스 도구이며 의학적 진단·치료를 대체하지 않습니다. 통증 악화, 멍, 급격한 부종 발생 시 담당 의료진과 상담하세요.
+        </p>
+
+      </section>
+
+    </main>
+
+    <!-- =========================================================
+         하단 고정 탭바 (Safe Area Bottom 대응)
+         ========================================================= -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white/95 backdrop-blur-md border-t border-slate-100 shadow-nav z-40 safe-bottom-nav">
+      <div class="grid grid-cols-4 px-2 pt-2 pb-1">
+        <button type="button" data-tab="home" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-blue-600 transition">
+          <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span class="text-[11px] font-bold">홈</span>
+        </button>
+
+        <button type="button" data-tab="routine" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 transition">
+          <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          <span class="text-[11px] font-semibold">일과 루틴</span>
+        </button>
+
+        <button type="button" data-tab="rts" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 transition">
+          <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span class="text-[11px] font-semibold">복귀 테스트</span>
+        </button>
+
+        <button type="button" data-tab="report" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 transition">
+          <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <span class="text-[11px] font-semibold">병원/기록</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- =========================================================
+         바텀 시트: 루틴 동작 가이드 + 주의사항 + 60초 타이머
+         ========================================================= -->
+    <div id="guideSheetBackdrop" class="sheet-backdrop fixed inset-0 z-50 bg-slate-900/55 backdrop-blur-[2px] flex items-end justify-center">
+      <div id="guideSheetPanel" class="sheet-panel w-full max-w-[430px] max-h-[90dvh] bg-white rounded-t-[28px] shadow-sheet flex flex-col overflow-hidden">
+
+        <div class="pt-3 pb-2.5 px-5 border-b border-slate-100 shrink-0">
+          <div class="w-10 h-1.5 bg-slate-200 rounded-full mx-auto mb-3"></div>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <span id="sheetSlotBadge" class="inline-block text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md mb-1">
+                출근 전 · 08:00
+              </span>
+              <h3 id="sheetRoutineTitle" class="text-lg font-extrabold text-slate-900 leading-snug">
+                침대 위 발목 펌핑
+              </h3>
+            </div>
+            <button id="btnCloseGuideSheet" type="button" aria-label="닫기" class="p-2 -mr-1 rounded-full text-slate-400 hover:bg-slate-100 active:bg-slate-200 transition shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          <!-- 동작 일러스트 (인라인 SVG) -->
+          <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex flex-col items-center">
+            <div id="sheetSvgContainer" class="w-full flex items-center justify-center"></div>
+            <p id="sheetSvgCaption" class="text-[11px] font-semibold text-blue-700 mt-1.5 text-center"></p>
+          </div>
+
+          <!-- 따라하기 3단계 -->
+          <div class="space-y-2.5">
+            <h4 class="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] flex items-center justify-center">✓</span>
+              따라하기 3단계
+            </h4>
+            <ol id="sheetStepsList" class="space-y-2"></ol>
+          </div>
+
+          <!-- 핵심 주의사항 (빨간색 강조) -->
+          <div class="bg-rose-50/90 border border-rose-200 rounded-2xl p-4 space-y-2">
+            <h4 class="text-xs font-extrabold text-rose-700 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              핵심 주의사항 (재파열 예방)
+            </h4>
+            <ul id="sheetPrecautionsList" class="space-y-1.5 text-xs text-rose-800 leading-relaxed"></ul>
+          </div>
+
+          <!-- 60초 루틴 타이머 -->
+          <div class="bg-slate-900 text-white rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="relative w-12 h-12 flex items-center justify-center shrink-0">
+                  <svg class="w-full h-full -rotate-90" viewBox="0 0 48 48">
+                    <circle cx="24" cy="24" r="20" stroke="#334155" stroke-width="4" fill="none" />
+                    <circle id="sheetTimerRing" cx="24" cy="24" r="20" stroke="#38BDF8" stroke-width="4" fill="none"
+                      stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="0"
+                      style="transition: stroke-dashoffset 0.3s linear;" />
+                  </svg>
+                  <span id="sheetTimerText" class="absolute text-xs font-extrabold tabular-nums">60s</span>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-white">60초 루틴 타이머</p>
+                  <p id="sheetTimerStatus" class="text-[11px] text-slate-400">시작 버튼을 눌러 천천히 따라해 보세요</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button id="btnSheetTimerToggle" type="button" class="px-3.5 py-2 rounded-xl bg-sky-400 hover:bg-sky-300 active:scale-95 text-slate-950 text-xs font-extrabold transition">
+                  시작
+                </button>
+                <button id="btnSheetTimerReset" type="button" class="px-2.5 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 active:scale-95 text-slate-200 text-xs font-bold transition">
+                  초기화
+                </button>
+              </div>
+            </div>
+            <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+              <div id="sheetTimerBar" class="h-full bg-sky-400 rounded-full transition-all duration-300" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <!-- 루틴 완료 체크 토글 -->
+          <button id="btnSheetCompleteRoutine" type="button" class="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-sm font-extrabold transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span id="btnSheetCompleteText">루틴 완료 체크</span>
+          </button>
+
+          <p class="text-center text-[11px] text-slate-400 pb-2 leading-relaxed">
+            본 가이드는 비의료 웰니스 일상 회복 참고용이며, 통증이 악화되면 즉시 중단하고 담당 의료진과 상담하세요.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         모달: 홈 화면에 앱 설치하기 (전용 아이콘 미리보기 + 3대 브라우저 안내)
+         ========================================================= -->
+    <div id="installModal" class="hidden fixed inset-0 z-50 bg-slate-900/55 backdrop-blur-[2px] flex items-end sm:items-center justify-center p-4">
+      <div class="bg-white w-full max-w-[400px] rounded-3xl p-6 space-y-4 shadow-2xl max-h-[88dvh] overflow-y-auto">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-extrabold text-slate-900">홈 화면에 앱 설치하기</h3>
+          <button id="btnCloseInstallModal" type="button" class="p-1.5 rounded-full text-slate-400 hover:bg-slate-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 동적 생성된 전용 앱 아이콘 미리보기 -->
+        <div class="flex items-center gap-3.5 bg-slate-50 border border-slate-100 rounded-2xl p-3.5">
+          <img id="modalAppIconPreview" alt="리커버핏 전용 앱 아이콘" class="w-14 h-14 rounded-2xl shadow-md shrink-0" />
+          <div>
+            <p class="text-sm font-extrabold text-slate-900">리커버핏</p>
+            <p class="text-[11px] text-slate-500 mt-0.5 leading-snug">
+              홈 화면에 추가하면 이 전용 아이콘이 생성되고, 브라우저 주소창 없는 전체 화면 앱으로 실행됩니다.
+            </p>
+          </div>
+        </div>
+
+        <!-- 네이티브 설치 프롬프트 가능 시 바로 설치 버튼 -->
+        <button id="btnNativeInstallNow" type="button" class="hidden w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold transition">
+          지금 바로 기기에 앱 설치하기
+        </button>
+
+        <!-- 브라우저별 단계 안내 -->
+        <div class="space-y-2.5 text-xs text-slate-600 leading-relaxed">
+          <div class="bg-blue-50/60 border border-blue-100 p-3.5 rounded-2xl">
+            <p class="font-extrabold text-blue-900 mb-1">1. 삼성 인터넷 (Samsung Internet)</p>
+            <p>우측 하단 <strong>메뉴(≡)</strong> → <strong>현재 페이지 추가</strong> → <strong>홈 화면</strong> 선택 (또는 주소창 우측 <strong>설치 아이콘 ↓</strong> 탭)</p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-2xl">
+            <p class="font-extrabold text-slate-900 mb-1">2. 크롬 (Chrome)</p>
+            <p>우측 상단 <strong>메뉴(⋮)</strong> → <strong>홈 화면에 추가</strong> 또는 <strong>앱 설치</strong> 선택</p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-2xl">
+            <p class="font-extrabold text-slate-900 mb-1">3. 사파리 (iPhone Safari)</p>
+            <p>하단 중앙 <strong>공유 버튼(□↑)</strong> → <strong>홈 화면에 추가</strong> → 우측 상단 <strong>추가</strong> 탭</p>
+          </div>
+        </div>
+
+        <button id="btnConfirmInstallModal" type="button" class="w-full py-3 rounded-2xl bg-slate-900 text-white text-xs font-bold">
+          확인
+        </button>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         모달: 데이터 초기화 확인 (window.confirm 대체)
+         ========================================================= -->
+    <div id="resetModal" class="hidden fixed inset-0 z-50 bg-slate-900/55 backdrop-blur-[2px] flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-[340px] rounded-3xl p-6 text-center space-y-4 shadow-2xl">
+        <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">기록을 모두 초기화할까요?</h3>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">저장된 통증 기록, 일과 루틴 체크, 복귀 테스트 데이터가 초기 상태로 되돌아갑니다.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button id="btnCancelReset" type="button" class="py-3 rounded-2xl bg-slate-100 text-slate-700 text-xs font-bold">취소</button>
+          <button id="btnConfirmReset" type="button" class="py-3 rounded-2xl bg-rose-600 text-white text-xs font-bold">초기화</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 토스트 메시지 (window.alert 대체) -->
+    <div id="toast" class="pointer-events-none fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] opacity-0 transition-all duration-300 translate-y-2">
+      <div id="toastText" class="bg-slate-900/95 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg whitespace-nowrap">
+        저장되었습니다
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =========================================================
+       애플리케이션 메인 로직
+       ========================================================= -->
+  <script>
+    (function () {
+      'use strict';
+
+      const STORAGE_KEY = 'recoverfit_pwa_state_v3';
+
+      // ---------------------------------------------------------
+      // 1. 직장인 일과 루틴 5종 (맞춤형 인라인 SVG + 3단계 + 주의사항)
+      // ---------------------------------------------------------
+      const ROUTINE_MASTER = [
+        {
+          id: 'r1',
+          slot: '출근 전',
+          time: '08:00',
+          title: '침대 위 발목 펌핑 (1분)',
+          summary: '기상 직후 첫 발 딛기 전 굳은 종아리 혈류 깨우기',
+          svgCaption: '발끝을 몸쪽으로 천천히 당겼다 앞쪽으로 밀어주세요',
+          svg: `
+            <svg viewBox="0 0 280 128" class="w-full max-w-[260px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="16" y="94" width="248" height="16" rx="8" fill="#E2E8F0"/>
+              <ellipse cx="144" cy="90" rx="34" ry="10" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1.5"/>
+              <path d="M26 74 L158 74" stroke="#334155" stroke-width="14" stroke-linecap="round"/>
+              <path d="M98 77 Q126 89 154 77" stroke="#2563EB" stroke-width="7" stroke-linecap="round"/>
+              <path d="M162 74 L176 44" stroke="#2563EB" stroke-width="10" stroke-linecap="round"/>
+              <path d="M165 74 L198 60" stroke="#94A3B8" stroke-width="8" stroke-linecap="round" stroke-dasharray="4 4"/>
+              <path d="M166 28 Q192 24 208 46" stroke="#E11D48" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M172 23 L164 28 L171 34" stroke="#E11D48" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M201 44 L209 47 L208 38" stroke="#E11D48" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="194" y="21" fill="#E11D48" font-size="10" font-weight="700">부드럽게 왕복</text>
+            </svg>
+          `,
+          steps: [
+            '침대에 누운 상태에서 종아리 아래에 얇은 베개를 받쳐 발목에 힘을 뺍니다.',
+            '발끝을 몸쪽으로 3초간 천천히 당겼다가, 다시 앞쪽으로 부드럽게 밀어줍니다.',
+            '통증이 없는 편안한 범위에서 60초 동안 약 15~20회 리듬감 있게 반복합니다.'
+          ],
+          precautions: [
+            '아침 기상 직후에는 근육이 경직되어 있으므로 발끝을 끝까지 꺾는 과신전을 피하세요.',
+            '반동을 주지 말고 종아리가 당기거나 찌릿하면 즉시 각도를 줄이세요.'
+          ]
+        },
+        {
+          id: 'r2',
+          slot: '오전 업무',
+          time: '10:30',
+          title: '책상 밑 좌식 종아리 이완 (1분)',
+          summary: '장시간 앉아있을 때 발목 회전 및 정맥 순환 촉진',
+          svgCaption: '의자에 앉아 발을 살짝 띄우고 발목을 천천히 회전하세요',
+          svg: `
+            <svg viewBox="0 0 280 128" class="w-full max-w-[260px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M150 26 L256 26 M242 26 L242 112" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>
+              <path d="M46 32 L46 80 L94 80 M70 80 L70 110 M54 110 L86 110" stroke="#94A3B8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="20" y1="112" x2="260" y2="112" stroke="#E2E8F0" stroke-width="2"/>
+              <path d="M62 70 L116 70 L138 94" stroke="#334155" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M138 94 L160 90" stroke="#2563EB" stroke-width="9" stroke-linecap="round"/>
+              <circle cx="164" cy="86" r="18" stroke="#E11D48" stroke-width="2.2" stroke-dasharray="4 3"/>
+              <path d="M178 74 L182 82 L173 82" stroke="#E11D48" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="166" y="60" fill="#E11D48" font-size="10" font-weight="700">발목 원 그리기</text>
+            </svg>
+          `,
+          steps: [
+            '사무실 의자에 바르게 앉아 다친 쪽 발을 바닥에서 5~10cm 살짝 띄웁니다.',
+            '엄지발가락으로 허공에 작은 원을 그리듯 시계 방향으로 10회 천천히 돌립니다.',
+            '반대 방향으로도 10회 반복한 뒤 발바닥을 내려놓고 10초간 종아리 힘을 뺍니다.'
+          ],
+          precautions: [
+            '다리를 꼬거나 무릎에 힘을 주지 말고 발목 관절만 가볍게 움직이세요.',
+            '회전 중 날카로운 통증(VAS 4 이상)이 느껴지면 동작을 멈추고 휴식하세요.'
+          ]
+        },
+        {
+          id: 'r3',
+          slot: '점심 시간',
+          time: '12:30',
+          title: '저강도 평지 보행 & 휴식 (1분 체크)',
+          summary: '식후 과도한 산책 자제 · 짧은 보폭 평지 보행 점검',
+          svgCaption: '보폭을 평소의 70%로 줄여 뒤꿈치부터 부드럽게 디디세요',
+          svg: `
+            <svg viewBox="0 0 280 128" class="w-full max-w-[260px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="110" x2="260" y2="110" stroke="#CBD5E1" stroke-width="3" stroke-linecap="round"/>
+              <!-- 걷는 실루엣 -->
+              <circle cx="128" cy="26" r="9" fill="#334155"/>
+              <path d="M128 38 L124 72" stroke="#334155" stroke-width="10" stroke-linecap="round"/>
+              <path d="M126 46 L146 62" stroke="#64748B" stroke-width="7" stroke-linecap="round"/>
+              <path d="M126 46 L108 62" stroke="#94A3B8" stroke-width="7" stroke-linecap="round"/>
+              <!-- 앞다리 (뒤꿈치 착지) -->
+              <path d="M124 72 L144 92 L152 106" stroke="#2563EB" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- 뒷다리 (짧은 보폭) -->
+              <path d="M124 72 L110 92 L102 106" stroke="#64748B" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- 짧은 보폭 화살표 -->
+              <path d="M104 120 H150" stroke="#E11D48" stroke-width="2" stroke-linecap="round"/>
+              <path d="M110 116 L103 120 L110 124" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M144 116 L151 120 L144 124" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="164" y="96" fill="#2563EB" font-size="10" font-weight="700">평지 · 짧은 보폭</text>
+              <text x="164" y="108" fill="#64748B" font-size="9">계단/오르막 피하기</text>
+            </svg>
+          `,
+          steps: [
+            '식사 후 이동 시 보폭을 평소보다 30% 정도 줄여 종아리가 과도하게 늘어나지 않게 걷습니다.',
+            '경사로·계단 대신 평지와 엘리베이터를 이용하며, 1분간 걸음걸이에 절뚝임이 없는지 점검합니다.',
+            '사무실 복귀 후 바로 자리에 앉아 5분 이상 다리를 편하게 쉬어줍니다.'
+          ],
+          precautions: [
+            '동료들과 속도를 맞추려 빠르게 걷거나 횡단보도에서 뛰는 행동은 재파열의 주원인입니다.',
+            '보행 중 종아리가 묵직하게 붓거나 당기면 즉시 멈추고 앉아서 휴식하세요.'
+          ]
+        },
+        {
+          id: 'r4',
+          slot: '오후 업무',
+          time: '15:30',
+          title: '부종 방지 발뒤꿈치 들기 준비 (1분)',
+          summary: '의자에 앉은 자세로 가벼운 뒤꿈치 들기(체중 부하 최소화)',
+          svgCaption: '앉은 상태에서 뒤꿈치만 천천히 들었다 내리며 펌핑하세요',
+          svg: `
+            <svg viewBox="0 0 280 128" class="w-full max-w-[260px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="112" x2="260" y2="112" stroke="#E2E8F0" stroke-width="3" stroke-linecap="round"/>
+              <!-- 의자 -->
+              <path d="M58 34 L58 78 L112 78 M85 78 L85 110 M68 110 L102 110" stroke="#94A3B8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- 앉은 하체 -->
+              <path d="M76 68 L136 68 L142 98" stroke="#334155" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- 뒤꿈치 들린 발 -->
+              <path d="M142 98 L166 108" stroke="#2563EB" stroke-width="9" stroke-linecap="round"/>
+              <!-- 위아래 화살표 -->
+              <path d="M126 108 L126 86" stroke="#E11D48" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M121 92 L126 85 L131 92" stroke="#E11D48" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="174" y="88" fill="#2563EB" font-size="10" font-weight="700">앉아서 뒤꿈치 UP</text>
+              <text x="174" y="101" fill="#64748B" font-size="9">가자미근 펌핑</text>
+            </svg>
+          `,
+          steps: [
+            '의자에 앉아 양발을 바닥에 평평하게 두고 무릎을 90도로 맞춥니다.',
+            '발가락 앞볼은 바닥에 붙인 채, 양쪽 뒤꿈치를 천천히 2~3cm 들어 올리고 2초 유지합니다.',
+            '천천히 뒤꿈치를 바닥에 내리며 60초 동안 12~15회 부드럽게 반복합니다.'
+          ],
+          precautions: [
+            '급성기·회복 초기에는 서서 체중을 싣는 뒤꿈치 들기 대신 반드시 앉아서 진행하세요.',
+            '종아리에 쥐가 날 듯한 뭉침이나 통증이 생기면 즉시 중단하고 가볍게 주물러 주세요.'
+          ]
+        },
+        {
+          id: 'r5',
+          slot: '퇴근 후',
+          time: '20:30',
+          title: '찜질 & 다리 거상 쿨다운 (1분 가이드)',
+          summary: '하루 누적 부종 배출 및 근육 피로 회복 마무리',
+          svgCaption: '다리를 심장보다 높게 올리고 증상에 맞는 찜질을 15분간 유지하세요',
+          svg: `
+            <svg viewBox="0 0 280 128" class="w-full max-w-[260px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="112" x2="260" y2="112" stroke="#E2E8F0" stroke-width="3" stroke-linecap="round"/>
+              <rect x="172" y="76" width="64" height="34" rx="10" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1.5"/>
+              <circle cx="48" cy="96" r="10" fill="#334155"/>
+              <path d="M62 102 L124 102" stroke="#334155" stroke-width="12" stroke-linecap="round"/>
+              <path d="M124 102 L182 68 L226 68" stroke="#2563EB" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="178" y="47" width="32" height="15" rx="5" fill="#0EA5E9" stroke="#0284C7" stroke-width="1.5"/>
+              <text x="184" y="57.5" fill="#FFFFFF" font-size="8" font-weight="700">PACK</text>
+              <path d="M210 40 L152 60" stroke="#E11D48" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="4 3"/>
+              <path d="M161 62 L151 60 L157 52" stroke="#E11D48" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="116" y="32" fill="#E11D48" font-size="10" font-weight="700">심장보다 높게 거상</text>
+            </svg>
+          `,
+          steps: [
+            '편하게 누워 쿠션이나 베개 2개를 겹쳐 다친 종아리가 심장보다 높게 올라오도록 올립니다.',
+            '열감·붓기가 있으면 수건으로 감싼 냉찜질, 뻐근함만 남았다면 미지근한 온찜질을 얹습니다.',
+            '1분 타이머로 자세를 세팅한 뒤 총 10~15분간 편안히 휴식하며 부종을 배출합니다.'
+          ],
+          precautions: [
+            '얼음팩이나 핫팩을 맨살에 직접 대지 말고 반드시 수건으로 감싸 피부 손상을 예방하세요.',
+            '부상 초기(열감·붓기 존재 시)에는 온찜질이 염증을 악화시킬 수 있으므로 냉찜질을 권장합니다.'
+          ]
+        }
+      ];
+
+      // ---------------------------------------------------------
+      // 2. 앱 상태 및 localStorage 저장/로드
+      // ---------------------------------------------------------
+      const DEFAULT_STATE = {
+        activeTab: 'home',
+        targetSport: '러닝',
+        daily: {
+          vas: 3,
+          stiffness: 'mild', // 'none' | 'mild' | 'severe'
+          steps: 3200,
+          stairs: 2,
+          sedentaryAlert: false
+        },
+        routines: {
+          r1: true,
+          r2: false,
+          r3: false,
+          r4: false,
+          r5: false
+        },
+        rts: {
+          walk20: true,
+          doubleHeel: false,
+          singleHeel: false,
+          bounce: false
+        },
+        history6Days: [
+          { label: '6일전', vas: 6, routinePct: 40 },
+          { label: '5일전', vas: 5, routinePct: 60 },
+          { label: '4일전', vas: 5, routinePct: 80 },
+          { label: '3일전', vas: 4, routinePct: 60 },
+          { label: '2일전', vas: 4, routinePct: 80 },
+          { label: '어제',  vas: 3, routinePct: 100 }
+        ]
+      };
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+          const parsed = JSON.parse(raw);
+          return {
+            ...DEFAULT_STATE,
+            ...parsed,
+            daily: { ...DEFAULT_STATE.daily, ...(parsed.daily || {}) },
+            routines: { ...DEFAULT_STATE.routines, ...(parsed.routines || {}) },
+            rts: { ...DEFAULT_STATE.rts, ...(parsed.rts || {}) },
+            history6Days: Array.isArray(parsed.history6Days) && parsed.history6Days.length === 6
+              ? parsed.history6Days
+              : DEFAULT_STATE.history6Days
+          };
+        } catch (err) {
+          return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (err) {
+          console.error('localStorage 저장 실패:', err);
+        }
+      }
+
+      let state = loadState();
+
+      // ---------------------------------------------------------
+      // 3. 토스트 유틸리티
+      // ---------------------------------------------------------
+      let toastTimer = null;
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        document.getElementById('toastText').textContent = msg;
+        el.classList.remove('opacity-0', 'translate-y-2');
+        el.classList.add('opacity-100', 'translate-y-0');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          el.classList.add('opacity-0', 'translate-y-2');
+          el.classList.remove('opacity-100', 'translate-y-0');
+        }, 2200);
+      }
+
+      // ---------------------------------------------------------
+      // 4. 4단계 회복 단계 계산 로직
+      // ---------------------------------------------------------
+      function computeRecoveryStage(vas, stiffness) {
+        const stiffPenalty = stiffness === 'severe' ? 1.5 : stiffness === 'mild' ? 0.5 : 0;
+        const score = Math.min(10, vas + stiffPenalty);
+
+        if (score >= 6.5) {
+          return {
+            stageName: '1단계 급성기',
+            headerClass: 'bg-rose-50 text-rose-700 border-rose-200',
+            heroPillClass: 'bg-rose-500/20 text-rose-300 border-rose-400/30',
+            headline: '절대 안정과 부종 관리로\n파열 부위를 보호해야 합니다',
+            safeSteps: 2500,
+            intensity: '안정 · 보호'
+          };
+        } else if (score >= 4) {
+          return {
+            stageName: '2단계 회복 초기',
+            headerClass: 'bg-amber-50 text-amber-700 border-amber-200',
+            heroPillClass: 'bg-amber-500/20 text-amber-300 border-amber-400/30',
+            headline: '허용 범위 내 일상 보행과\n부드러운 가동성 이완에 집중하세요',
+            safeSteps: 4500,
+            intensity: '저강도 이완'
+          };
+        } else if (score >= 2) {
+          return {
+            stageName: '3단계 강화기',
+            headerClass: 'bg-blue-50 text-blue-700 border-blue-200',
+            heroPillClass: 'bg-sky-500/20 text-sky-300 border-sky-400/30',
+            headline: '통증이 크게 줄었습니다!\n점진적 근력 회복을 시작할 단계입니다',
+            safeSteps: 6500,
+            intensity: '중강도 강화'
+          };
+        } else {
+          return {
+            stageName: '4단계 복귀 준비기',
+            headerClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            heroPillClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30',
+            headline: '일상 부하가 매우 안정적입니다!\n복귀 테스트로 운동 시점을 점검하세요',
+            safeSteps: 8500,
+            intensity: '복귀 훈련'
+          };
+        }
+      }
+
+      function getVasLabel(vas) {
+        if (vas === 0) return '통증 전혀 없음';
+        if (vas <= 2) return '미세한 불편감';
+        if (vas <= 4) return '약간 뻐근함';
+        if (vas <= 6) return '보행 시 당김·통증';
+        if (vas <= 8) return '뚜렷한 통증 · 휴식 필요';
+        return '극심한 통증 · 진료 권장';
+      }
+
+      function getRoutineStats() {
+        const total = ROUTINE_MASTER.length;
+        const done = ROUTINE_MASTER.filter(r => state.routines[r.id]).length;
+        const pct = Math.round((done / total) * 100);
+        return { total, done, pct };
+      }
+
+      function getRtsScore() {
+        const { walk20, doubleHeel, singleHeel, bounce } = state.rts;
+        let score = 0;
+        if (walk20) score += 20;
+        if (doubleHeel) score += 25;
+        if (singleHeel) score += 30;
+        if (bounce) score += 25;
+        return score;
+      }
+
+      // ---------------------------------------------------------
+      // 5. 렌더링 함수들
+      // ---------------------------------------------------------
+      function renderHome() {
+        const { vas, stiffness, steps, stairs, sedentaryAlert } = state.daily;
+        const stage = computeRecoveryStage(vas, stiffness);
+        const rStats = getRoutineStats();
+
+        // 헤더 단계 배지
+        const headerBadge = document.getElementById('headerStageBadge');
+        headerBadge.textContent = stage.stageName;
+        headerBadge.className = `px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${stage.headerClass}`;
+
+        // 히어로 카드
+        const heroPill = document.getElementById('heroStagePill');
+        heroPill.textContent = stage.stageName;
+        heroPill.className = `px-2.5 py-1 rounded-full text-xs font-bold border ${stage.heroPillClass}`;
+        document.getElementById('heroHeadline').innerHTML = stage.headline.replace('\n', '<br />');
+        document.getElementById('safeStepLimitText').textContent = `${stage.safeSteps.toLocaleString()}보`;
+        document.getElementById('allowedIntensityText').textContent = stage.intensity;
+        document.getElementById('heroTargetSport').textContent = state.targetSport;
+
+        // 오늘의 루틴 진행률
+        document.getElementById('homeRoutineBar').style.width = `${rStats.pct}%`;
+        document.getElementById('homeRoutineCount').textContent = `${rStats.done}/${rStats.total} 완료`;
+
+        // 10초 데일리 체크
+        const vasSlider = document.getElementById('vasSlider');
+        vasSlider.value = vas;
+        const vasPill = document.getElementById('vasScorePill');
+        vasPill.textContent = `VAS ${vas}`;
+        if (vas >= 6) {
+          vasPill.className = 'px-3 py-1 rounded-full text-sm font-extrabold bg-rose-50 text-rose-600 shrink-0';
+          vasSlider.classList.add('slider-danger');
+        } else {
+          vasPill.className = 'px-3 py-1 rounded-full text-sm font-extrabold bg-blue-50 text-blue-700 shrink-0';
+          vasSlider.classList.remove('slider-danger');
+        }
+        document.getElementById('vasFeelingText').textContent = getVasLabel(vas);
+
+        document.querySelectorAll('.stiffness-btn').forEach(btn => {
+          const active = btn.dataset.stiffness === stiffness;
+          btn.className = active
+            ? 'stiffness-btn py-2.5 rounded-xl text-xs font-bold border border-blue-600 bg-blue-50 text-blue-700 transition-all'
+            : 'stiffness-btn py-2.5 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all';
+        });
+
+        // 실시간 과부하 시뮬레이터
+        const effectiveSteps = steps + stairs * 150;
+        const ratio = Math.round((effectiveSteps / stage.safeSteps) * 100);
+        const isDanger = effectiveSteps > stage.safeSteps;
+        const isCaution = !isDanger && ratio >= 80;
+
+        document.getElementById('stepsSlider').value = steps;
+        document.getElementById('stairsSlider').value = stairs;
+        document.getElementById('stepsValueText').textContent = `${steps.toLocaleString()}보`;
+        document.getElementById('stairsValueText').textContent = `${stairs}층`;
+        document.getElementById('effectiveStepsText').textContent = effectiveSteps.toLocaleString();
+        document.getElementById('limitStepsSubText').textContent = stage.safeSteps.toLocaleString();
+
+        const loadBadge = document.getElementById('loadPercentBadge');
+        const loadBar = document.getElementById('loadProgressBar');
+        loadBadge.textContent = `${ratio}%`;
+        loadBar.style.width = `${Math.min(100, ratio)}%`;
+
+        if (isDanger) {
+          loadBadge.className = 'text-sm font-extrabold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg shrink-0';
+          loadBar.className = 'h-full bg-rose-500 rounded-full transition-all duration-300';
+        } else if (isCaution) {
+          loadBadge.className = 'text-sm font-extrabold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg shrink-0';
+          loadBar.className = 'h-full bg-amber-500 rounded-full transition-all duration-300';
+        } else {
+          loadBadge.className = 'text-sm font-extrabold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg shrink-0';
+          loadBar.className = 'h-full bg-blue-600 rounded-full transition-all duration-300';
+        }
+
+        // 좌식 토글 상태
+        const sedDot = document.getElementById('sedentaryDot');
+        const sedBadge = document.getElementById('sedentaryStatusBadge');
+        const sedSub = document.getElementById('sedentarySubText');
+        if (sedentaryAlert) {
+          sedDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping';
+          sedBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700';
+          sedBadge.textContent = '주의 ON';
+          sedSub.textContent = '60분 이상 연속 착석 감지 · 부종 예방 필요';
+        } else {
+          sedDot.className = 'w-2.5 h-2.5 rounded-full bg-slate-300';
+          sedBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-500';
+          sedBadge.textContent = 'OFF';
+          sedSub.textContent = '연속 착석 시 종아리 부종 주의 배너 표시';
+        }
+
+        // 상단 주의/위험 경고 배너
+        const banner = document.getElementById('overloadAlertBanner');
+        const iconBox = document.getElementById('overloadAlertIcon');
+        const levelPill = document.getElementById('overloadLevelPill');
+        const titleEl = document.getElementById('overloadAlertTitle');
+        const descEl = document.getElementById('overloadAlertDesc');
+
+        if (isDanger) {
+          banner.className = 'alert-pulse rounded-2xl p-4 border shadow-sm bg-rose-50 border-rose-200';
+          iconBox.className = 'w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5';
+          levelPill.className = 'px-1.5 py-0.5 rounded text-[10px] font-extrabold text-white bg-rose-600';
+          levelPill.textContent = '위험';
+          titleEl.className = 'text-sm font-bold text-rose-700';
+          titleEl.textContent = '일일 안전 부하 초과! 즉시 착석 휴식';
+          descEl.className = 'text-xs text-rose-700/90 mt-1 leading-relaxed';
+          descEl.textContent = `환산 부하(${effectiveSteps.toLocaleString()}보)가 ${stage.stageName} 한도(${stage.safeSteps.toLocaleString()}보)를 넘었습니다. 계단을 멈추고 10분 이상 다리를 편하게 쉬세요.`;
+        } else if (isCaution || sedentaryAlert) {
+          banner.className = 'alert-pulse rounded-2xl p-4 border shadow-sm bg-amber-50 border-amber-200';
+          iconBox.className = 'w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5';
+          levelPill.className = 'px-1.5 py-0.5 rounded text-[10px] font-extrabold text-white bg-amber-500';
+          levelPill.textContent = '주의';
+          titleEl.className = 'text-sm font-bold text-amber-800';
+          descEl.className = 'text-xs text-amber-800/90 mt-1 leading-relaxed';
+          if (isCaution) {
+            titleEl.textContent = `안전 한도의 ${ratio}% 도달 · 보행량 조절 필요`;
+            descEl.textContent = '남은 일과에서는 엘리베이터를 이용하고 불필요한 도보 이동을 줄여 재파열을 예방하세요.';
+          } else {
+            titleEl.textContent = '장시간 좌식(60분) 감지 · 부종 예방 루틴 권장';
+            descEl.textContent = '오래 앉아 있으면 종아리 정맥 순환이 저하됩니다. 지금 일과 루틴 탭에서 1분 발목 이완을 실행해 보세요.';
+          }
+        } else {
+          banner.className = 'hidden';
+        }
+      }
+
+      function renderRoutines() {
+        const container = document.getElementById('routineTimelineContainer');
+        const rStats = getRoutineStats();
+
+        document.getElementById('routinePercentText').textContent = `${rStats.pct}%`;
+        document.getElementById('routineProgressBar').style.width = `${rStats.pct}%`;
+        document.getElementById('routineCountText').textContent = `${rStats.done} / ${rStats.total} 완료`;
+
+        container.innerHTML = ROUTINE_MASTER.map(item => {
+          const isDone = !!state.routines[item.id];
+          return `
+            <div data-open-guide="${item.id}" role="button" tabindex="0"
+              class="group bg-white rounded-3xl p-4 shadow-card border ${isDone ? 'border-blue-200 bg-blue-50/25' : 'border-slate-100 hover:border-blue-200'} active:scale-[0.99] transition-all cursor-pointer">
+              <div class="flex items-start gap-3">
+                <button type="button" data-routine-toggle="${item.id}" aria-label="완료 체크"
+                  class="mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                    isDone ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300 bg-white hover:border-blue-500'
+                  }">
+                  ${isDone ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' : ''}
+                </button>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2 mb-1">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-[11px] font-bold px-2 py-0.5 rounded-md ${isDone ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}">${item.slot}</span>
+                      <span class="text-[11px] font-medium text-slate-400">${item.time}</span>
+                    </div>
+                    <span class="text-[11px] font-bold text-blue-600 group-hover:translate-x-0.5 transition-transform shrink-0">
+                      동작 가이드 &gt;
+                    </span>
+                  </div>
+                  <p class="text-sm font-bold ${isDone ? 'line-through text-slate-400' : 'text-slate-900'} leading-snug">${item.title}</p>
+                  <p class="text-xs text-slate-500 mt-1">${item.summary}</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderRTS() {
+        const sport = state.targetSport;
+        const score = getRtsScore();
+
+        document.querySelectorAll('.sport-pill').forEach(btn => {
+          const active = btn.dataset.sport === sport;
+          btn.className = active
+            ? 'sport-pill py-2 rounded-xl text-xs font-bold border border-blue-600 bg-blue-600 text-white shadow-sm transition'
+            : 'sport-pill py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition';
+        });
+
+        document.getElementById('rtsSportName').textContent = sport;
+        document.getElementById('rtsWalk20').checked = state.rts.walk20;
+        document.getElementById('rtsDoubleHeel').checked = state.rts.doubleHeel;
+        document.getElementById('rtsSingleHeel').checked = state.rts.singleHeel;
+        document.getElementById('rtsBounce').checked = state.rts.bounce;
+
+        const circumference = 364.4;
+        const circle = document.getElementById('rtsGaugeCircle');
+        circle.style.strokeDashoffset = circumference - (circumference * score) / 100;
+        document.getElementById('rtsScoreText').textContent = `${score}%`;
+
+        const box = document.getElementById('rtsVerdictBox');
+        const title = document.getElementById('rtsVerdictTitle');
+        const desc = document.getElementById('rtsVerdictDesc');
+
+        if (score === 100) {
+          circle.style.stroke = '#10B981';
+          box.className = 'w-full mt-3 rounded-2xl p-4 bg-emerald-50 border border-emerald-200 text-left';
+          title.className = 'text-sm font-bold text-emerald-900';
+          title.textContent = `${sport} 단계적 복귀 가능!`;
+          desc.className = 'text-xs text-emerald-800 mt-1 leading-relaxed';
+          desc.textContent = `기본 근력과 탄성 충격 흡수가 회복되었습니다. 첫 2주는 평소 강도의 60~70%로 워밍업 후 안전하게 복귀하세요.`;
+        } else if (score >= 45) {
+          circle.style.stroke = '#F59E0B';
+          box.className = 'w-full mt-3 rounded-2xl p-4 bg-amber-50 border border-amber-200 text-left';
+          title.className = 'text-sm font-bold text-amber-900';
+          title.textContent = '기초 근력 강화 진행 중 (복귀 대기)';
+          desc.className = 'text-xs text-amber-800 mt-1 leading-relaxed';
+          desc.textContent = `일상 보행은 안정적이나 ${sport}의 급가속·방향 전환에는 재파열 위험이 있습니다. 한 발 뒤꿈치 들기 10회 통과 후 바운스 테스트로 넘어가세요.`;
+        } else {
+          circle.style.stroke = '#E11D48';
+          box.className = 'w-full mt-3 rounded-2xl p-4 bg-rose-50 border border-rose-200 text-left';
+          title.className = 'text-sm font-bold text-rose-800';
+          title.textContent = '일상 보호 및 회복 루틴 집중 단계';
+          desc.className = 'text-xs text-rose-700 mt-1 leading-relaxed';
+          desc.textContent = `아직 ${sport} 복귀는 이릅니다. 통증 없는 평지 20분 보행과 일과 루틴을 꾸준히 수행하며 회복 기반을 다지세요.`;
+        }
+      }
+
+      function renderReport() {
+        const rStats = getRoutineStats();
+        const rtsScore = getRtsScore();
+        const weekData = [
+          ...state.history6Days,
+          { label: '오늘', vas: state.daily.vas, routinePct: rStats.pct }
+        ];
+
+        const avgVas = (weekData.reduce((s, d) => s + d.vas, 0) / weekData.length).toFixed(1);
+        document.getElementById('reportAvgVas').textContent = `${avgVas}점`;
+        document.getElementById('reportRoutineRate').textContent = `${rStats.pct}%`;
+        document.getElementById('reportRtsRate').textContent = `${rtsScore}%`;
+
+        // 1) 7일 통증(VAS) SVG 라인 차트
+        const vasContainer = document.getElementById('vasChartContainer');
+        const svgW = 320, svgH = 110, padX = 22, padY = 18;
+        const chartW = svgW - padX * 2;
+        const chartH = svgH - padY * 2 - 14;
+
+        const pts = weekData.map((d, i) => ({
+          x: padX + (chartW / (weekData.length - 1)) * i,
+          y: padY + chartH - (d.vas / 10) * chartH,
+          vas: d.vas,
+          label: d.label
+        }));
+
+        const poly = pts.map(p => `${p.x},${p.y}`).join(' ');
+        const area = `${pts[0].x},${padY + chartH} ${poly} ${pts[pts.length - 1].x},${padY + chartH}`;
+
+        vasContainer.innerHTML = `
+          <svg viewBox="0 0 ${svgW} ${svgH}" class="w-full h-full overflow-visible">
+            <defs>
+              <linearGradient id="vasFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#E11D48" stop-opacity="0.22" />
+                <stop offset="100%" stop-color="#E11D48" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <line x1="${padX}" y1="${padY}" x2="${svgW - padX}" y2="${padY}" stroke="#E2E8F0" stroke-dasharray="3 3" />
+            <line x1="${padX}" y1="${padY + chartH / 2}" x2="${svgW - padX}" y2="${padY + chartH / 2}" stroke="#E2E8F0" stroke-dasharray="3 3" />
+            <line x1="${padX}" y1="${padY + chartH}" x2="${svgW - padX}" y2="${padY + chartH}" stroke="#CBD5E1" />
+            <polygon points="${area}" fill="url(#vasFill)" />
+            <polyline fill="none" stroke="#E11D48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${poly}" />
+            ${pts.map((p, idx) => `
+              <circle cx="${p.x}" cy="${p.y}" r="${idx === 6 ? 4.5 : 3.5}" fill="${idx === 6 ? '#E11D48' : '#FFFFFF'}" stroke="#E11D48" stroke-width="2" />
+              <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#334155">${p.vas}</text>
+              <text x="${p.x}" y="${svgH - 2}" text-anchor="middle" font-size="9.5" font-weight="${idx === 6 ? '700' : '500'}" fill="${idx === 6 ? '#0F172A' : '#94A3B8'}">${p.label}</text>
+            `).join('')}
+          </svg>
+        `;
+
+        // 2) 7일 루틴 달성률 인라인 SVG 바 차트
+        const rContainer = document.getElementById('routineChartContainer');
+        const barSlotW = chartW / weekData.length;
+        const barW = 20;
+
+        rContainer.innerHTML = `
+          <svg viewBox="0 0 ${svgW} ${svgH}" class="w-full h-full overflow-visible">
+            <line x1="${padX}" y1="${padY}" x2="${svgW - padX}" y2="${padY}" stroke="#E2E8F0" stroke-dasharray="3 3" />
+            <line x1="${padX}" y1="${padY + chartH}" x2="${svgW - padX}" y2="${padY + chartH}" stroke="#CBD5E1" />
+            ${weekData.map((d, idx) => {
+              const cx = padX + barSlotW * idx + barSlotW / 2;
+              const h = Math.max(4, (d.routinePct / 100) * chartH);
+              const y = padY + chartH - h;
+              const fill = idx === 6 ? '#2563EB' : (d.routinePct >= 80 ? '#38BDF8' : '#CBD5E1');
+              return `
+                <rect x="${cx - barW / 2}" y="${y}" width="${barW}" height="${h}" rx="5" fill="${fill}" />
+                <text x="${cx}" y="${y - 6}" text-anchor="middle" font-size="9" font-weight="700" fill="${idx === 6 ? '#1D4ED8' : '#64748B'}">${d.routinePct}%</text>
+                <text x="${cx}" y="${svgH - 2}" text-anchor="middle" font-size="9.5" font-weight="${idx === 6 ? '700' : '500'}" fill="${idx === 6 ? '#0F172A' : '#94A3B8'}">${d.label}</text>
+              `;
+            }).join('')}
+          </svg>
+        `;
+      }
+
+      function switchTab(tabName, shouldSave = true) {
+        state.activeTab = tabName;
+        if (shouldSave) saveState();
+
+        document.querySelectorAll('.tab-panel').forEach(p => {
+          p.classList.toggle('active', p.id === `tab-${tabName}`);
+        });
+
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          const active = btn.dataset.tab === tabName;
+          btn.className = active
+            ? 'nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-blue-600 transition'
+            : 'nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-600 transition';
+          const span = btn.querySelector('span');
+          if (span) span.className = active ? 'text-[11px] font-bold' : 'text-[11px] font-semibold';
+        });
+
+        if (tabName === 'home') renderHome();
+        if (tabName === 'routine') renderRoutines();
+        if (tabName === 'rts') renderRTS();
+        if (tabName === 'report') renderReport();
+      }
+
+      // ---------------------------------------------------------
+      // 6. PWA Standalone 감지 & beforeinstallprompt 설치 도우미
+      // ---------------------------------------------------------
+      let deferredInstallPrompt = null;
+
+      function isRunningStandalone() {
+        return (
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.navigator.standalone === true
+        );
+      }
+
+      function updatePWAInstallUI() {
+        const standalone = isRunningStandalone();
+        const headerInstallBtn = document.getElementById('btnHeaderInstall');
+        const statusText = document.getElementById('standaloneStatusText');
+        const statusBadge = document.getElementById('standaloneStatusBadge');
+
+        // 동적 생성된 전용 아이콘 미리보기 세팅
+        if (window.__RECOVERFIT_ICON_192__) {
+          document.getElementById('modalAppIconPreview').src = window.__RECOVERFIT_ICON_192__;
+          document.getElementById('clinicCardAppIcon').src = window.__RECOVERFIT_ICON_192__;
+        }
+
+        if (standalone) {
+          headerInstallBtn.classList.add('hidden');
+          statusText.textContent = '홈 화면에서 전체 화면 앱(Standalone)으로 실행 중입니다';
+          statusBadge.textContent = '설치됨';
+          statusBadge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 shrink-0';
+        } else {
+          headerInstallBtn.classList.remove('hidden');
+          statusText.textContent = '현재 웹 브라우저에서 실행 중 · 홈 화면 추가 권장';
+          statusBadge.textContent = '브라우저';
+          statusBadge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 shrink-0';
+        }
+      }
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        document.getElementById('btnNativeInstallNow').classList.remove('hidden');
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        document.getElementById('btnNativeInstallNow').classList.add('hidden');
+        document.getElementById('installModal').classList.add('hidden');
+        updatePWAInstallUI();
+        showToast('리커버핏 앱이 홈 화면에 설치되었습니다!');
+      });
+
+      async function handleInstallTrigger() {
+        if (deferredInstallPrompt) {
+          try {
+            deferredInstallPrompt.prompt();
+            const choice = await deferredInstallPrompt.userChoice;
+            if (choice.outcome === 'accepted') {
+              showToast('앱 설치가 시작되었습니다.');
+            }
+            deferredInstallPrompt = null;
+            document.getElementById('btnNativeInstallNow').classList.add('hidden');
+            return;
+          } catch (err) {
+            console.warn('네이티브 설치 프롬프트 실패, 안내 모달 표시:', err);
+          }
+        }
+        document.getElementById('installModal').classList.remove('hidden');
+      }
+
+      // ---------------------------------------------------------
+      // 7. 바텀 시트 (동작 가이드 + 60초 타이머)
+      // ---------------------------------------------------------
+      const TIMER_TOTAL = 60;
+      const RING_CIRC = 125.6;
+      let currentRoutineId = null;
+      let timerInterval = null;
+      let timeLeft = TIMER_TOTAL;
+      let timerRunning = false;
+
+      function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerRunning = false;
+      }
+
+      function updateTimerUI() {
+        document.getElementById('sheetTimerText').textContent = `${timeLeft}s`;
+        document.getElementById('sheetTimerRing').style.strokeDashoffset = RING_CIRC * ((TIMER_TOTAL - timeLeft) / TIMER_TOTAL);
+        document.getElementById('sheetTimerBar').style.width = `${(timeLeft / TIMER_TOTAL) * 100}%`;
+
+        const btn = document.getElementById('btnSheetTimerToggle');
+        const status = document.getElementById('sheetTimerStatus');
+
+        if (timerRunning) {
+          btn.textContent = '일시정지';
+          btn.className = 'px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 text-xs font-extrabold transition';
+          status.textContent = '천천히 호흡하며 동작을 유지하세요';
+        } else if (timeLeft === 0) {
+          btn.textContent = '다시 시작';
+          btn.className = 'px-3.5 py-2 rounded-xl bg-sky-400 hover:bg-sky-300 active:scale-95 text-slate-950 text-xs font-extrabold transition';
+          status.textContent = '60초 완료! 루틴이 자동 체크되었습니다';
+        } else if (timeLeft < TIMER_TOTAL) {
+          btn.textContent = '계속';
+          btn.className = 'px-3.5 py-2 rounded-xl bg-sky-400 hover:bg-sky-300 active:scale-95 text-slate-950 text-xs font-extrabold transition';
+          status.textContent = '일시정지됨 · 계속하거나 초기화할 수 있어요';
+        } else {
+          btn.textContent = '시작';
+          btn.className = 'px-3.5 py-2 rounded-xl bg-sky-400 hover:bg-sky-300 active:scale-95 text-slate-950 text-xs font-extrabold transition';
+          status.textContent = '시작 버튼을 눌러 천천히 따라해 보세요';
+        }
+      }
+
+      function updateSheetCompleteButton() {
+        if (!currentRoutineId) return;
+        const done = !!state.routines[currentRoutineId];
+        const btn = document.getElementById('btnSheetCompleteRoutine');
+        const txt = document.getElementById('btnSheetCompleteText');
+        if (done) {
+          btn.className = 'w-full py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-[0.99] text-slate-700 text-sm font-extrabold transition flex items-center justify-center gap-2';
+          txt.textContent = '루틴 완료됨 (눌러서 취소)';
+        } else {
+          btn.className = 'w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-sm font-extrabold transition flex items-center justify-center gap-2';
+          txt.textContent = '루틴 완료 체크';
+        }
+      }
+
+      function openGuideSheet(id) {
+        const item = ROUTINE_MASTER.find(r => r.id === id);
+        if (!item) return;
+
+        currentRoutineId = id;
+        stopTimer();
+        timeLeft = TIMER_TOTAL;
+
+        document.getElementById('sheetSlotBadge').textContent = `${item.slot} · ${item.time}`;
+        document.getElementById('sheetRoutineTitle').textContent = item.title;
+        document.getElementById('sheetSvgContainer').innerHTML = item.svg;
+        document.getElementById('sheetSvgCaption').textContent = item.svgCaption;
+
+        document.getElementById('sheetStepsList').innerHTML = item.steps.map((s, idx) => `
+          <li class="flex items-start gap-2.5 bg-slate-50 rounded-xl p-3">
+            <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</span>
+            <span class="text-xs text-slate-700 leading-relaxed">${s}</span>
+          </li>
+        `).join('');
+
+        document.getElementById('sheetPrecautionsList').innerHTML = item.precautions.map(p => `
+          <li class="flex items-start gap-1.5">
+            <span class="text-rose-500 font-bold shrink-0">•</span>
+            <span>${p}</span>
+          </li>
+        `).join('');
+
+        updateTimerUI();
+        updateSheetCompleteButton();
+
+        document.getElementById('guideSheetBackdrop').classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeGuideSheet() {
+        stopTimer();
+        document.getElementById('guideSheetBackdrop').classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      function toggleTimer() {
+        if (timerRunning) {
+          stopTimer();
+          updateTimerUI();
+          return;
+        }
+        if (timeLeft <= 0) timeLeft = TIMER_TOTAL;
+        timerRunning = true;
+        updateTimerUI();
+
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          if (timeLeft <= 0) {
+            timeLeft = 0;
+            stopTimer();
+            if (currentRoutineId) {
+              state.routines[currentRoutineId] = true;
+              saveState();
+              renderRoutines();
+              renderHome();
+              renderReport();
+              updateSheetCompleteButton();
+            }
+            showToast('60초 루틴 완료! 자동 체크되었습니다.');
+          }
+          updateTimerUI();
+        }, 1000);
+      }
+
+      // ---------------------------------------------------------
+      // 8. 이벤트 바인딩
+      // ---------------------------------------------------------
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      document.getElementById('btnGoToRoutines').addEventListener('click', () => switchTab('routine'));
+      document.getElementById('btnHeaderInstall').addEventListener('click', handleInstallTrigger);
+      document.getElementById('btnOpenInstallFromClinic').addEventListener('click', () => {
+        document.getElementById('installModal').classList.remove('hidden');
+      });
+      document.getElementById('btnNativeInstallNow').addEventListener('click', handleInstallTrigger);
+      document.getElementById('btnCloseInstallModal').addEventListener('click', () => {
+        document.getElementById('installModal').classList.add('hidden');
+      });
+      document.getElementById('btnConfirmInstallModal').addEventListener('click', () => {
+        document.getElementById('installModal').classList.add('hidden');
+      });
+
+      // 홈: 데일리 체크 & 시뮬레이터
+      document.getElementById('vasSlider').addEventListener('input', (e) => {
+        state.daily.vas = Number(e.target.value);
+        saveState();
+        renderHome();
+      });
+
+      document.querySelectorAll('.stiffness-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.daily.stiffness = btn.dataset.stiffness;
+          saveState();
+          renderHome();
+        });
+      });
+
+      document.getElementById('stepsSlider').addEventListener('input', (e) => {
+        state.daily.steps = Number(e.target.value);
+        saveState();
+        renderHome();
+      });
+
+      document.getElementById('stairsSlider').addEventListener('input', (e) => {
+        state.daily.stairs = Number(e.target.value);
+        saveState();
+        renderHome();
+      });
+
+      document.getElementById('btnSedentarySim').addEventListener('click', () => {
+        state.daily.sedentaryAlert = !state.daily.sedentaryAlert;
+        saveState();
+        renderHome();
+        if (state.daily.sedentaryAlert) showToast('장시간 좌식(60분) 알림이 활성화되었습니다.');
+      });
+
+      // 일과 루틴: 카드 클릭(바텀 시트) vs 체크박스 토글
+      document.getElementById('routineTimelineContainer').addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('[data-routine-toggle]');
+        if (toggleBtn) {
+          e.stopPropagation();
+          const id = toggleBtn.dataset.routineToggle;
+          state.routines[id] = !state.routines[id];
+          saveState();
+          renderRoutines();
+          renderHome();
+          renderReport();
+          return;
+        }
+        const card = e.target.closest('[data-open-guide]');
+        if (card) openGuideSheet(card.dataset.openGuide);
+      });
+
+      document.getElementById('btnResetRoutines').addEventListener('click', () => {
+        ROUTINE_MASTER.forEach(r => { state.routines[r.id] = false; });
+        saveState();
+        renderRoutines();
+        renderHome();
+        renderReport();
+        showToast('오늘 루틴 체크를 초기화했습니다.');
+      });
+
+      // 바텀 시트 조작
+      document.getElementById('btnCloseGuideSheet').addEventListener('click', closeGuideSheet);
+      document.getElementById('guideSheetBackdrop').addEventListener('click', (e) => {
+        if (e.target.id === 'guideSheetBackdrop') closeGuideSheet();
+      });
+      document.getElementById('btnSheetTimerToggle').addEventListener('click', toggleTimer);
+      document.getElementById('btnSheetTimerReset').addEventListener('click', () => {
+        stopTimer();
+        timeLeft = TIMER_TOTAL;
+        updateTimerUI();
+      });
+      document.getElementById('btnSheetCompleteRoutine').addEventListener('click', () => {
+        if (!currentRoutineId) return;
+        const nextVal = !state.routines[currentRoutineId];
+        state.routines[currentRoutineId] = nextVal;
+        saveState();
+        renderRoutines();
+        renderHome();
+        renderReport();
+        updateSheetCompleteButton();
+        showToast(nextVal ? '루틴 완료로 체크되었습니다!' : '완료 체크가 해제되었습니다.');
+      });
+
+      // 복귀 테스트
+      document.querySelectorAll('.sport-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.targetSport = btn.dataset.sport;
+          saveState();
+          renderRTS();
+          renderHome();
+        });
+      });
+
+      ['rtsWalk20', 'rtsDoubleHeel', 'rtsSingleHeel', 'rtsBounce'].forEach((elId) => {
+        const keyMap = {
+          rtsWalk20: 'walk20',
+          rtsDoubleHeel: 'doubleHeel',
+          rtsSingleHeel: 'singleHeel',
+          rtsBounce: 'bounce'
+        };
+        document.getElementById(elId).addEventListener('change', (e) => {
+          state.rts[keyMap[elId]] = e.target.checked;
+          saveState();
+          renderRTS();
+        });
+      });
+
+      // 진료실 요약 복사 (iFrame 호환 execCommand 사용)
+      document.getElementById('btnCopyReport').addEventListener('click', () => {
+        const avgVas = document.getElementById('reportAvgVas').textContent;
+        const rPct = document.getElementById('reportRoutineRate').textContent;
+        const rtsPct = document.getElementById('reportRtsRate').textContent;
+        const summaryText =
+          `[리커버핏 7일 회복 요약]\n` +
+          `- 제휴 병원: 바른정형외과 스포츠재활클리닉\n` +
+          `- 7일 평균 통증: ${avgVas}\n` +
+          `- 오늘 루틴 달성률: ${rPct}\n` +
+          `- 운동 복귀 준비도(${state.targetSport}): ${rtsPct}`;
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = summaryText;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          showToast('진료실 요약이 클립보드에 복사되었습니다.');
+        } catch (err) {
+          showToast('복사에 실패했습니다.');
+        }
+      });
+
+      // 데이터 초기화 모달
+      document.getElementById('btnOpenResetModal').addEventListener('click', () => {
+        document.getElementById('resetModal').classList.remove('hidden');
+      });
+      document.getElementById('btnCancelReset').addEventListener('click', () => {
+        document.getElementById('resetModal').classList.add('hidden');
+      });
+      document.getElementById('btnConfirmReset').addEventListener('click', () => {
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        saveState();
+        renderHome();
+        renderRoutines();
+        renderRTS();
+        renderReport();
+        switchTab('home', false);
+        document.getElementById('resetModal').classList.add('hidden');
+        showToast('모든 기록이 초기화되었습니다.');
+      });
+
+      // 초기 로드 실행
+      window.onload = function () {
+        updatePWAInstallUI();
+        renderHome();
+        renderRoutines();
+        renderRTS();
+        renderReport();
+        switchTab(state.activeTab, false);
+      };
+    })();
+  </script>
+</body>
+</html>
